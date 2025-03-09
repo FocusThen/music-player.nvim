@@ -10,8 +10,8 @@
 - [x] login spotify is pain in the ass
 - [x] redirect user to get code or something
 - [x] get Code somehow and connect the spotify
+- [x] save the data what we have given
 - [ ] create server that lisen on that redirect url and get the code(be smart).
-- [ ] save the data what we have given
 - [ ] Get information `https://api.spotify.com/v1/me/player/currently-playing`
 - [ ] Print console basic information such as what is playing
 - [ ] Instead using console, toast it information with `vim.notify`
