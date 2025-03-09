@@ -16,7 +16,7 @@ local M = {
 	auth_code = nil,
 	refresh_token = nil,
 	access_token = nil,
-	redirect_url = "http://localhost",
+	redirect_url = nil,
 }
 
 M.setup = function(config)
