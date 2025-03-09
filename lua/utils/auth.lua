@@ -61,6 +61,7 @@ end
 M.login_with_credentials = function(encoded_client)
 	local headers = {
 		["Authorization"] = "Bearer " .. encoded_client,
+		["Authorization"] = "Basic " .. encoded_client,
 	}
 	local post_data = "grant_type=client_credentials"
 	local response, err = curl.post(AUTH_API_TOKEN, {
