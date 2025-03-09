@@ -36,7 +36,6 @@
 ---
 ### Functions
 
-- [ ] create reset fn
 - [ ] create fn that shows currently playing
 - [ ] create fn maybe goes next or prev?
 - [ ] create fn maybe pause?
@@ -44,6 +43,6 @@
 
 ---
 ### Finishing
-- [ ] Bind fn's together so anyone can use
+- [x] Bind fn's together so anyone can use
 - [ ] After learn LUA refactor this garbage
 
