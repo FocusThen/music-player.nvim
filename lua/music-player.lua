@@ -19,7 +19,13 @@ local M = {
 	redirect_url = "http://localhost",
 }
 
-M.setup = function()
+M.setup = function(config)
+	if not config or not config.redirect_url then
+		vim.notify("music-player redirect_url is required.", vim.log.levels.ERROR, { title = title })
+		return
+	end
+
+	M.redirect_url = config.redirect_url
 	M.authorize()
 	M.start_polling()
 end
@@ -111,7 +117,6 @@ end
 
 M.fn_refresh_token = function()
 	if not M.refresh_token then
-    print("hhellow")
 		vim.notify("Refresh token is missing.", vim.log.levels.ERROR, { title = title })
 		return
 	end
@@ -159,7 +164,7 @@ M.fn_refresh_token = function()
 	end
 end
 
-M.get_current_song = function()
+M.get_current_song = function(should_notify)
 	if not M.access_token then
 		vim.notify("Access token is missing. Please authorize first.", vim.log.levels.ERROR, { title = title })
 		M.authorize(M.get_current_song)
@@ -188,6 +193,14 @@ M.get_current_song = function()
 			local track_name = data.item.name
 			local track_id = data.item.id
 			local is_playing = data.is_playing
+
+      if should_notify then
+        vim.notify(
+          string.format("Now playing: %s - %s", artist_name, track_name),
+          vim.log.levels.INFO,
+          { title = title }
+        )
+      end
 
 			if last_track_id ~= track_id then
 				if last_track_id == nil then

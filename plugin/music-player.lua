@@ -3,7 +3,7 @@ vim.api.nvim_create_user_command("MPlayer", function()
 end, {})
 
 vim.api.nvim_create_user_command("MPlayerCurrentSong", function()
-	require("music-player").get_current_song()
+	require("music-player").get_current_song(true)
 end, {})
 
 vim.api.nvim_create_user_command("MPlayerStart", function()
