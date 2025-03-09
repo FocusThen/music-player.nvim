@@ -2,9 +2,9 @@
 
 * authorize
     * [Spotify Developers](https://developer.spotify.com/)
-    * Go there and create an App and Get your `Cliend ID` and `Client secret`
-    * `require("music-player").authorize()` creating setup basically does the same, ask about information that above
-    * Lastly `Code` right now i am working on it how to get it but it basically in url after redirect `?code=xxxx`.
+    * Go there and create an App and Get your `Cliend ID` and `Client secret` and dont forget give your `Redirect Url` to `http://localhost:3001` or something
+    * `require("music-player").setup({redirect_url: "your url"})` creating setup basically does the same, ask about information that above
+    * Lastly `Code` right now i am working on it how to get it but it basically in url after redirect `http://localhost/?code=xxxx`.
     * All information above saved in your `.config/nvim/music-player-credentials.json`
     * `Cliend ID` and `Client secret` saved as `b64_client` which means not in raw.
 
