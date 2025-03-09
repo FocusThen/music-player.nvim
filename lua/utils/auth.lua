@@ -1,7 +1,7 @@
 local curl = require("plenary.curl")
 local notify = require("notify")
 
-local AUTH_API_TOKEN = "https://accounts.spotify.com/api/token"
+local AUTH_API_TOKEN = "https://accounts.spotify.com/api/token?grant_type=refresh_token"
 local CREDENTIALS_FILE = vim.fn.stdpath("config") .. "/spotify_credentials.json"
 
 local M = {}
@@ -60,7 +60,6 @@ end
 
 M.login_with_credentials = function(encoded_client)
 	local headers = {
-		["Authorization"] = "Bearer " .. encoded_client,
 		["Authorization"] = "Basic " .. encoded_client,
 	}
 	local post_data = "grant_type=client_credentials"
@@ -72,11 +71,13 @@ M.login_with_credentials = function(encoded_client)
 	local logined_user
 
 	if err then
-		notify("musicPlayer Auth Error: " .. err, vim.log.levels.ERROR)
+		notify("musicPlayer Auth Error", vim.log.levels.ERROR)
 		return nil
 	else
 		local body = response.body
 		local json = vim.fn.json_decode(body)
+
+		print(vim.inspect(json))
 		if json.error then
 			notify(json.error, vim.log.levels.ERROR)
 			return nil
@@ -86,6 +87,33 @@ M.login_with_credentials = function(encoded_client)
 	end
 
 	return logined_user
+end
+
+M.get_currently_playing = function(logined_user)
+	local headers = {
+		["Authorization"] = "Bearer " .. logined_user.access_token,
+	}
+
+	local response, err = curl.get("https://api.spotify.com/v1/me/player/currently-playing", {
+		headers = headers,
+	})
+
+	if err then
+		notify("musicPlayer Currently Playing Error: " .. err, vim.log.levels.ERROR)
+		return nil
+	else
+		local body = response.body
+		local json = vim.fn.json_decode(body)
+		print(vim.inspect(response))
+
+		if response.status ~= 200 then
+			notify("Error while geting currently playing status code: " .. response.status, vim.log.levels.ERROR)
+			return nil
+		else
+			print(vim.inspect(json))
+			-- notify(json)
+		end
+	end
 end
 
 return M

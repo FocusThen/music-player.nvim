@@ -1,8 +1,6 @@
 local utils = require("utils.auth")
-local M = {}
 
-local API = "https://api.spotify.com/"
-local currently = "https://api.spotify.com/v1/me/player/currently-playing"
+local M = {}
 
 M.setup = function()
 	local encoded_client = utils.get_credentials(false)
@@ -12,6 +10,8 @@ M.setup = function()
 	end
 
 	local logined_user = utils.login_with_credentials(encoded_client)
+
+	utils.get_currently_playing(logined_user)
 end
 
 return M
