@@ -194,13 +194,13 @@ M.get_current_song = function(should_notify)
 			local track_id = data.item.id
 			local is_playing = data.is_playing
 
-      if should_notify then
-        vim.notify(
-          string.format("Now playing: %s - %s", artist_name, track_name),
-          vim.log.levels.INFO,
-          { title = title }
-        )
-      end
+			if should_notify then
+				vim.notify(
+					string.format("Now playing: %s - %s", artist_name, track_name),
+					vim.log.levels.INFO,
+					{ title = title }
+				)
+			end
 
 			if last_track_id ~= track_id then
 				if last_track_id == nil then
@@ -264,7 +264,7 @@ M.start_polling = function()
 	timer = uv.new_timer()
 	if timer ~= nil then
 		timer:start(
-			polling_interval * 1000,
+			0,
 			polling_interval * 1000,
 			vim.schedule_wrap(function()
 				M.get_current_song()
