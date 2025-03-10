@@ -6,7 +6,7 @@ M.build_authorization_url = function(client_id, redirect_uri)
 		client_id = client_id,
 		response_type = "code",
 		redirect_uri = redirect_uri,
-		scope = "user-read-currently-playing",
+		scope = "user-read-currently-playing user-modify-playback-state",
 	}
 	local encoded_params = {}
 	for k, v in pairs(params) do

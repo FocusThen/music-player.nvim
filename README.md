@@ -16,6 +16,17 @@
 * `:MPlayerStop` & `require("music-player").stop_polling()`
     * Stops timer
 
+
+### Player
+* `:MPlayerPlay`
+* `:MPlayerPause`
+* `:MPlayerNext`
+* `:MPlayerPrev`
+
+### FILE
+* `:MPlayerClean`
+    * removes saved file.
+
 # TODOS
 ### Building Steps
 - [x] Create repo
@@ -36,9 +47,9 @@
 ---
 ### Functions
 
-- [ ] create fn that shows currently playing
-- [ ] create fn maybe goes next or prev?
-- [ ] create fn maybe pause?
+- [x] create fn that shows currently playing
+- [x] create fn maybe goes next or prev?
+- [x] create fn maybe pause?
 - [x] create track last song every 5 sec if changed notify!
 
 ---
@@ -46,3 +57,6 @@
 - [x] Bind fn's together so anyone can use
 - [ ] After learn LUA refactor this garbage
 
+
+### Bugs!
+- [ ] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.

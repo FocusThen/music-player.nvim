@@ -29,4 +29,13 @@ M.read_credentials = function()
 	return vim.json.decode(content)
 end
 
+M.reset_file = function()
+	local ok, err = os.remove(M.saved_file_path)
+	if not ok then
+		print("Error deleting file: " .. err)
+	else
+		print("File deleted successfully!")
+	end
+end
+
 return M

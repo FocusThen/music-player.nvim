@@ -1,11 +1,9 @@
 local curl = require("plenary.curl")
 local utils = require("utils.utils")
 local utils_file = require("utils.file")
-local uv = vim.loop
+local utils_timer = require("utils.timer")
 
 local title = "Music Player (Spotify)"
-local polling_interval = 5 -- seconds
-local timer = nil
 local last_track_id = nil
 local last_is_playing = nil
 
@@ -27,7 +25,7 @@ M.setup = function(config)
 
 	M.redirect_url = config.redirect_url
 	M.authorize()
-	M.start_polling()
+	utils_timer.start_polling(M.get_current_song)
 end
 
 M.authorize = function(cb)
@@ -253,34 +251,68 @@ M.get_current_song = function(should_notify)
 		M.fn_refresh_token()
 	else
 		vim.notify("Error: " .. response.body, vim.log.levels.ERROR, { title = title })
-		M.stop_polling()
+		utils_timer.stop_polling()
 	end
 end
 
+M.player_state_control = function(state, mod)
+	if not M.access_token then
+		vim.notify("Access token is missing. Please authorize first.", vim.log.levels.ERROR, { title = title })
+		M.authorize()
+		return
+	end
+
+	local url = "https://api.spotify.com/v1/me/player/" .. state
+	local headers = {
+		["Authorization"] = "Bearer " .. M.access_token,
+	}
+
+	local response, err = curl.request({
+		url = url,
+		method = mod,
+		headers = headers,
+	})
+
+	if err then
+		vim.notify("Error: " .. err, vim.log.levels.ERROR, { title = title })
+	end
+
+	if response.status == 200 then
+		return
+	end
+	if response.status == 204 then
+		vim.notify("State: " .. state, vim.log.levels.INFO, { title = title })
+	elseif response.status == 401 then
+		vim.notify("Access token expired. Refreshing token...", vim.log.levels.WARN, { title = title })
+		M.fn_refresh_token()
+	else
+		vim.notify("Error: " .. response.body, vim.log.levels.ERROR, { title = title })
+	end
+end
+
+M.next_track = function()
+	M.player_state_control("next", "POST")
+end
+M.previous_track = function()
+	M.player_state_control("previous", "POST")
+end
+M.pause_track = function()
+	M.player_state_control("pause", "PUT")
+end
+M.play_track = function()
+	M.player_state_control("play", "PUT")
+end
+--
+--
+-- remap
 M.start_polling = function()
-	if timer then
-		M.stop_polling()
-	end
-	timer = uv.new_timer()
-	if timer ~= nil then
-		timer:start(
-			0,
-			polling_interval * 1000,
-			vim.schedule_wrap(function()
-				M.get_current_song()
-			end)
-		)
-		vim.notify("Started polling for song changes", vim.log.levels.INFO, { title = title })
-	end
+	utils_timer.start_polling(M.get_current_song)
 end
-
-function M.stop_polling()
-	if timer then
-		timer:stop()
-		timer:close()
-		timer = nil
-		vim.notify("Stopped polling for song changes", vim.log.levels.INFO, { title = title })
-	end
+M.stop_polling = function()
+	utils_timer.stop_polling()
 end
-
+--- remove saved file
+M.remove_saved_file = function()
+	utils_file.reset_file()
+end
 return M
