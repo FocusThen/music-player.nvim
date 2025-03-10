@@ -43,6 +43,7 @@
 - [x] Get information `https://api.spotify.com/v1/me/player/currently-playing`
 - [x] Print console basic information such as what is playing
 - [x] Instead using console, toast it information with `vim.notify`
+- [ ] PKCE ????????? you don't need something like client secret ?
 
 ---
 ### Functions
@@ -60,3 +61,5 @@
 
 ### Bugs!
 - [ ] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.
+
+
