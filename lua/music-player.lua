@@ -6,72 +6,59 @@ local utils_timer = require("utils.timer")
 local title = "Music Player (Spotify)"
 local last_track_id = nil
 local last_is_playing = nil
+local client_id = "02361f61d8864da1b3d6a85c3fa725d7" -- mine
+local redirect_url = "http://localhost:3001/callback"
 
 local M = {
-	client_id = nil,
-	client_secret = nil,
 	b64_client = nil,
 	auth_code = nil,
 	refresh_token = nil,
 	access_token = nil,
-	redirect_url = nil,
+	code_challenge = nil,
+	code_verifier = nil,
 }
 
-M.setup = function(config)
-	if not config or not config.redirect_url then
-		vim.notify("music-player redirect_url is required.", vim.log.levels.ERROR, { title = title })
-		return
-	end
-
-	M.redirect_url = config.redirect_url
-	M.authorize()
-	utils_timer.start_polling(M.get_current_song)
+M.setup = function()
+	--M.authorize()
+	--utils_timer.start_polling(M.get_current_song)
 end
 
-M.authorize = function(cb)
+M.authorize = function()
 	local credentials = utils_file.read_credentials()
 
 	if credentials then
 		M.access_token = credentials.access_token
 		M.refresh_token = credentials.refresh_token
-		M.b64_client = credentials.b64_client
-		if cb then
-			vim.notify("Saved Tokens retrieved successfully!", vim.log.levels.INFO, { title = title })
-			cb()
-		end
 		return
 	end
 
-	M.client_id = vim.fn.input("Enter your Spotify Client ID: ")
-	M.client_secret = vim.fn.inputsecret("Enter your Spotify Client Secret: ")
-
-	local auth_url = utils.build_authorization_url(M.client_id, M.redirect_url)
+	local auth_url, code_challenge, code_verifier = utils.build_authorization_url(client_id, redirect_url)
+	M.code_challenge = code_challenge
+	M.code_verifier = code_verifier
 	print("Opening browser for Spotify authorization...")
 	utils.open_browser(auth_url)
 	print("Please authorize the application in your browser.")
 	print("After authorization, copy the 'code' from the redirected URL and paste it below.")
+	-- Create a server so they don't need to type
 	vim.ui.input({ prompt = "Enter authorization code: " }, function(input)
 		M.auth_code = input
 		M.get_tokens()
-		-- Callback if needded
-		if cb then
-			cb()
-		end
 	end)
 end
 
 M.get_tokens = function()
 	if not M.auth_code then
 		vim.notify("Authorization code is missing.", vim.log.levels.ERROR, { title = title })
-		M.authorize(M.get_tokens)
 		return
 	end
 
 	local url = "https://accounts.spotify.com/api/token"
 	local body = {
+		client_id = client_id,
 		grant_type = "authorization_code",
 		code = M.auth_code,
-		redirect_uri = M.redirect_url,
+		redirect_uri = redirect_url,
+		code_verifier = M.code_verifier,
 	}
 	local t_encoded_body = {}
 	for k, v in pairs(body) do
@@ -79,10 +66,8 @@ M.get_tokens = function()
 	end
 	local s_encoded_body = table.concat(t_encoded_body, "&")
 
-	M.b64_client = vim.base64.encode(M.client_id .. ":" .. M.client_secret)
 	local headers = {
 		["Content-Type"] = "application/x-www-form-urlencoded",
-		["Authorization"] = "Basic " .. M.b64_client,
 	}
 
 	local response, err = curl.request({
@@ -102,14 +87,13 @@ M.get_tokens = function()
 		M.refresh_token = data.refresh_token
 		vim.notify("Tokens retrieved successfully!", vim.log.levels.INFO, { title = title })
 
-		-- Save
+		--	Save
 		utils_file.save_credentials({
 			access_token = M.access_token,
 			refresh_token = M.refresh_token,
-			b64_client = M.b64_client,
 		})
 	else
-		vim.notify("Failed to retrieve tokens: " .. response.body, vim.log.levels.ERROR, { title = title })
+		vim.notify("Failed to retrieve tokens - token api: " .. response.body, vim.log.levels.ERROR, { title = title })
 	end
 end
 
@@ -121,8 +105,11 @@ M.fn_refresh_token = function()
 
 	local url = "https://accounts.spotify.com/api/token"
 	local body = {
+		client_id = client_id,
 		grant_type = "refresh_token",
 		refresh_token = M.refresh_token,
+		redirect_uri = redirect_url,
+		code_verifier = utils.code_verifier,
 	}
 
 	local t_encoded_body = {}
@@ -133,7 +120,6 @@ M.fn_refresh_token = function()
 
 	local headers = {
 		["Content-Type"] = "application/x-www-form-urlencoded",
-		["Authorization"] = "Basic " .. M.b64_client,
 	}
 
 	local response, err = curl.request({
@@ -154,7 +140,6 @@ M.fn_refresh_token = function()
 		utils_file.save_credentials({
 			access_token = M.access_token,
 			refresh_token = M.refresh_token,
-			b64_client = M.b64_client,
 		}, true)
 		vim.notify("Access token refreshed successfully!", vim.log.levels.INFO, { title = title })
 	else
@@ -165,7 +150,6 @@ end
 M.get_current_song = function(should_notify)
 	if not M.access_token then
 		vim.notify("Access token is missing. Please authorize first.", vim.log.levels.ERROR, { title = title })
-		M.authorize(M.get_current_song)
 		return
 	end
 
@@ -253,13 +237,12 @@ M.get_current_song = function(should_notify)
 		vim.notify("Error: " .. response.body, vim.log.levels.ERROR, { title = title })
 		utils_timer.stop_polling()
 	end
-  return nil
+	return nil
 end
 
 M.player_state_control = function(state, mod)
 	if not M.access_token then
 		vim.notify("Access token is missing. Please authorize first.", vim.log.levels.ERROR, { title = title })
-		M.authorize()
 		return
 	end
 
