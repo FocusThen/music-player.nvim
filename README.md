@@ -60,6 +60,6 @@
 
 
 ### Bugs!
-- [ ] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.
+- [x] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.
 
 

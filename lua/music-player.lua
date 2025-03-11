@@ -253,6 +253,7 @@ M.get_current_song = function(should_notify)
 		vim.notify("Error: " .. response.body, vim.log.levels.ERROR, { title = title })
 		utils_timer.stop_polling()
 	end
+  return nil
 end
 
 M.player_state_control = function(state, mod)
