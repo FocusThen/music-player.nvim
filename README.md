@@ -1,12 +1,8 @@
 # Music player (Spotify) for neovim
 
 * authorize
-    * [Spotify Developers](https://developer.spotify.com/)
-    * Go there and create an App and Get your `Cliend ID` and `Client secret` and dont forget give your `Redirect Url` to `http://localhost:3001` or something
-    * `require("music-player").setup({redirect_url: "your url"})` creating setup basically does the same, ask about information that above
-    * Lastly `Code` right now i am working on it how to get it but it basically in url after redirect `http://localhost/?code=xxxx`.
-    * All information above saved in your `.config/nvim/music-player-credentials.json`
-    * `Cliend ID` and `Client secret` saved as `b64_client` which means not in raw.
+    * `Code` right now i am working on it how to get it but it basically in url after redirect `http://localhost:3001/callback?code=xxxx`.
+    * `access_token` and `refresh_token` saved in `.config/nvim/music-player-credentials.json`
 
 * `:MPlayer` & `require("music-player").authorize()`
 * `:MPlayerCurrentSong` & `require("music-player").get_current_song()`
@@ -43,7 +39,7 @@
 - [x] Get information `https://api.spotify.com/v1/me/player/currently-playing`
 - [x] Print console basic information such as what is playing
 - [x] Instead using console, toast it information with `vim.notify`
-- [ ] PKCE ????????? you don't need something like client secret ?
+- [x] PKCE ????????? you don't need something like client secret ?
 
 ---
 ### Functions
@@ -60,6 +56,6 @@
 
 
 ### Bugs!
-- [x] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.
+- [ ] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.
 
 
