@@ -119,7 +119,7 @@ M.fn_refresh_token = function()
 		grant_type = "refresh_token",
 		refresh_token = M.refresh_token,
 		redirect_uri = redirect_url,
-		code_verifier = utils.code_verifier,
+		access_token = M.access_token,
 	}
 
 	local t_encoded_body = {}
@@ -170,6 +170,7 @@ M.get_current_song = function(should_notify)
 
 	curl.get(url, {
 		headers = headers,
+		args = { "--max-time", "10" },
 		callback = vim.schedule_wrap(function(response)
 			if response.status == 200 then
 				local data = vim.json.decode(response.body)
