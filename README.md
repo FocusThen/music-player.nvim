@@ -1,7 +1,7 @@
 # Music player (Spotify) for neovim
 
 * authorize
-    * `Code` right now i am working on it how to get it but it basically in url after redirect `http://localhost:3001/callback?code=xxxx`.
+    * For `Code` code opens default browser but behind the scene i make lua server so i can get the code.
     * `access_token` and `refresh_token` saved in `.config/nvim/music-player-credentials.json`
 
 * `:MPlayer` & `require("music-player").authorize()`
@@ -35,7 +35,7 @@
 - [x] redirect user to get code or something
 - [x] get Code somehow and connect the spotify
 - [x] save the data what we have given
-- [ ] create server that lisen on that redirect url and get the code(be smart).
+- [x] create server that lisen on that redirect url and get the code(be smart).
 - [x] Get information `https://api.spotify.com/v1/me/player/currently-playing`
 - [x] Print console basic information such as what is playing
 - [x] Instead using console, toast it information with `vim.notify`
@@ -56,6 +56,6 @@
 
 
 ### Bugs!
-- [ ] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.
+- [x] Some times in `utils.timer` -> `vim.schedule_wrap` fails and gives error about currently playing unfinished or something.
 
 
