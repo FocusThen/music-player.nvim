@@ -118,8 +118,6 @@ M.fn_refresh_token = function()
 		client_id = client_id,
 		grant_type = "refresh_token",
 		refresh_token = M.refresh_token,
-		redirect_uri = redirect_url,
-		access_token = M.access_token,
 	}
 
 	local t_encoded_body = {}
