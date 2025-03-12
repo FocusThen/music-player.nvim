@@ -23,7 +23,7 @@ local M = {
 M.setup = function()
 	M.authorize()
 	if should_start_polling then
-	   M.start_polling()
+		M.start_polling()
 	end
 end
 
@@ -168,85 +168,80 @@ M.get_current_song = function(should_notify)
 		["Authorization"] = "Bearer " .. M.access_token,
 	}
 
-	local response, err = curl.request({
-		url = url,
-		method = "GET",
+	curl.get(url, {
 		headers = headers,
+		callback = vim.schedule_wrap(function(response)
+			if response.status == 200 then
+				local data = vim.json.decode(response.body)
+				if data and data.item then
+					local artist_name = data.item.artists[1].name
+					local track_name = data.item.name
+					local track_id = data.item.id
+					local is_playing = data.is_playing
+
+					if should_notify then
+						vim.notify(
+							string.format("Now playing: %s - %s", artist_name, track_name),
+							vim.log.levels.INFO,
+							{ title = title }
+						)
+					end
+
+					if last_track_id ~= track_id then
+						if last_track_id == nil then
+							vim.notify(
+								string.format("Now playing: %s - %s", artist_name, track_name),
+								vim.log.levels.INFO,
+								{ title = title }
+							)
+						else
+							vim.notify(
+								string.format("Next song: %s - %s", artist_name, track_name),
+								vim.log.levels.INFO,
+								{ title = title }
+							)
+						end
+						last_track_id = track_id
+						last_is_playing = is_playing
+					--
+					-- resume check
+					--
+					elseif last_is_playing ~= is_playing then
+						if is_playing then
+							vim.notify("Playback resumed", vim.log.levels.INFO, { title = title })
+						else
+							vim.notify("Playback paused", vim.log.levels.WARN, { title = title })
+						end
+						last_is_playing = is_playing
+					end
+				else
+					--
+					-- Finish check
+					--
+					if last_track_id ~= nil then
+						vim.notify("Song finished", vim.log.levels.WARN, { title = title })
+						last_track_id = nil
+						last_is_playing = nil
+					end
+				end
+			elseif response.status == 204 then
+				--
+				-- Finish check
+				--
+				if last_track_id ~= nil then
+					vim.notify("Song finished", vim.log.levels.WARN, { title = title })
+					last_track_id = nil
+					last_is_playing = nil
+				end
+			elseif response.status == 401 then
+				vim.notify("Access token expired. Refreshing token...", vim.log.levels.WARN, { title = title })
+				M.fn_refresh_token()
+			else
+				vim.notify("Error: " .. response.body, vim.log.levels.ERROR, { title = title })
+				utils_timer.stop_polling()
+			end
+		end),
 	})
-
-	if err then
-		vim.notify("Error: " .. err, vim.log.levels.ERROR, { title = title })
-	end
-
-	if response.status == 200 then
-		local data = vim.json.decode(response.body)
-		if data and data.item then
-			local artist_name = data.item.artists[1].name
-			local track_name = data.item.name
-			local track_id = data.item.id
-			local is_playing = data.is_playing
-
-			if should_notify then
-				vim.notify(
-					string.format("Now playing: %s - %s", artist_name, track_name),
-					vim.log.levels.INFO,
-					{ title = title }
-				)
-			end
-
-			if last_track_id ~= track_id then
-				if last_track_id == nil then
-					vim.notify(
-						string.format("Now playing: %s - %s", artist_name, track_name),
-						vim.log.levels.INFO,
-						{ title = title }
-					)
-				else
-					vim.notify(
-						string.format("Next song: %s - %s", artist_name, track_name),
-						vim.log.levels.INFO,
-						{ title = title }
-					)
-				end
-				last_track_id = track_id
-				last_is_playing = is_playing
-			--
-			-- resume check
-			--
-			elseif last_is_playing ~= is_playing then
-				if is_playing then
-					vim.notify("Playback resumed", vim.log.levels.INFO, { title = title })
-				else
-					vim.notify("Playback paused", vim.log.levels.WARN, { title = title })
-				end
-				last_is_playing = is_playing
-			end
-		else
-			--
-			-- Finish check
-			--
-			if last_track_id ~= nil then
-				vim.notify("Song finished", vim.log.levels.WARN, { title = title })
-				last_track_id = nil
-				last_is_playing = nil
-			end
-		end
-	elseif response.status == 204 then
-		--
-		-- Finish check
-		--
-		if last_track_id ~= nil then
-			vim.notify("Song finished", vim.log.levels.WARN, { title = title })
-			last_track_id = nil
-			last_is_playing = nil
-		end
-	elseif response.status == 401 then
-		vim.notify("Access token expired. Refreshing token...", vim.log.levels.WARN, { title = title })
-		M.fn_refresh_token()
-	else
-		vim.notify("Error: " .. response.body, vim.log.levels.ERROR, { title = title })
-		utils_timer.stop_polling()
-	end
 end
 
 M.player_state_control = function(state, mod)
@@ -299,9 +294,7 @@ end
 --
 -- remap
 M.start_polling = function()
-	utils_timer.start_polling(function()
-		M.get_current_song()
-	end)
+	utils_timer.start_polling(M.get_current_song)
 end
 M.stop_polling = function()
 	utils_timer.stop_polling()

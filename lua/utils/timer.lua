@@ -12,13 +12,9 @@ M.start_polling = function(cb)
 	end
 	timer = uv.new_timer()
 	if timer ~= nil then
-		timer:start(
-			0,
-			polling_interval * 1000,
-			vim.schedule_wrap(function()
-				cb()
-			end)
-		)
+		timer:start(0, polling_interval * 1000, function()
+			cb()
+		end)
 		vim.notify("Started polling for song changes", vim.log.levels.INFO, { title = title })
 	end
 end
