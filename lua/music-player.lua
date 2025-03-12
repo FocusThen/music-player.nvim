@@ -2,6 +2,7 @@ local curl = require("plenary.curl")
 local utils = require("utils.utils")
 local utils_file = require("utils.file")
 local utils_timer = require("utils.timer")
+local server = require("utils.server")
 
 local title = "Music Player (Spotify)"
 local last_track_id = nil
@@ -39,15 +40,18 @@ M.authorize = function()
 	local auth_url, code_challenge, code_verifier = utils.build_authorization_url(client_id, redirect_url)
 	M.code_challenge = code_challenge
 	M.code_verifier = code_verifier
+	server.start_server(function(code)
+		if code then
+			M.auth_code = code
+			vim.schedule(function()
+				M.get_tokens()
+			end)
+		else
+			vim.notify("Authorization code is missing.", vim.log.levels.ERROR, { title = title })
+		end
+	end)
 	print("Opening browser for Spotify authorization...")
 	utils.open_browser(auth_url)
-	print("Please authorize the application in your browser.")
-	print("After authorization, copy the 'code' from the redirected URL and paste it below.")
-	-- Create a server so they don't need to type
-	vim.ui.input({ prompt = "Enter authorization code: " }, function(input)
-		M.auth_code = input
-		M.get_tokens()
-	end)
 end
 
 M.get_tokens = function()
@@ -296,7 +300,12 @@ end
 --
 -- remap
 M.start_polling = function()
-	utils_timer.start_polling(M.get_current_song)
+	local function poll()
+		vim.uv.new_thread(nil, function()
+			M.get_current_song()
+		end)
+	end
+	utils_timer.start_polling(poll)
 end
 M.stop_polling = function()
 	utils_timer.stop_polling()
