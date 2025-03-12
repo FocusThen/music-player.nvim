@@ -23,7 +23,7 @@ local M = {
 M.setup = function()
 	M.authorize()
 	if should_start_polling then
-		utils_timer.start_polling(M.get_current_song)
+	   M.start_polling()
 	end
 end
 
@@ -247,7 +247,6 @@ M.get_current_song = function(should_notify)
 		vim.notify("Error: " .. response.body, vim.log.levels.ERROR, { title = title })
 		utils_timer.stop_polling()
 	end
-	return nil
 end
 
 M.player_state_control = function(state, mod)
@@ -300,12 +299,9 @@ end
 --
 -- remap
 M.start_polling = function()
-	local function poll()
-		vim.uv.new_thread(nil, function()
-			M.get_current_song()
-		end)
-	end
-	utils_timer.start_polling(poll)
+	utils_timer.start_polling(function()
+		M.get_current_song()
+	end)
 end
 M.stop_polling = function()
 	utils_timer.stop_polling()
