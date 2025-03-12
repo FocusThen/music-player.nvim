@@ -8,6 +8,7 @@ local last_track_id = nil
 local last_is_playing = nil
 local client_id = "02361f61d8864da1b3d6a85c3fa725d7" -- mine
 local redirect_url = "http://localhost:3001/callback"
+local should_start_polling = false
 
 local M = {
 	b64_client = nil,
@@ -19,8 +20,10 @@ local M = {
 }
 
 M.setup = function()
-	--M.authorize()
-	--utils_timer.start_polling(M.get_current_song)
+	M.authorize()
+	if should_start_polling then
+		utils_timer.start_polling(M.get_current_song)
+	end
 end
 
 M.authorize = function()
@@ -29,6 +32,7 @@ M.authorize = function()
 	if credentials then
 		M.access_token = credentials.access_token
 		M.refresh_token = credentials.refresh_token
+		should_start_polling = true
 		return
 	end
 
@@ -92,6 +96,8 @@ M.get_tokens = function()
 			access_token = M.access_token,
 			refresh_token = M.refresh_token,
 		})
+
+		should_start_polling = true
 	else
 		vim.notify("Failed to retrieve tokens - token api: " .. response.body, vim.log.levels.ERROR, { title = title })
 	end
