@@ -114,6 +114,7 @@ M.fn_refresh_token = function()
 	end
 
 	local url = "https://accounts.spotify.com/api/token"
+
 	local body = {
 		client_id = client_id,
 		grant_type = "refresh_token",
@@ -144,6 +145,7 @@ M.fn_refresh_token = function()
 	if response.status == 200 then
 		local data = vim.json.decode(response.body)
 		M.access_token = data.access_token
+		M.refresh_token = data.refresh_token
 		-- Update
 		utils_file.save_credentials({
 			access_token = M.access_token,
