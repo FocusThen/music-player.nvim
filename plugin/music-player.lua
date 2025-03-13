@@ -33,3 +33,7 @@ vim.api.nvim_create_user_command("MPlayerClean", function()
 	require("music-player").remove_saved_file()
 end, {})
 
+vim.api.nvim_create_user_command("MPlayerR", function()
+	require("music-player").fn_refresh_token()
+end, {})
+
