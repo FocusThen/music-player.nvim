@@ -48,7 +48,7 @@
 - [x] create fn maybe goes next or prev?
 - [x] create fn maybe pause?
 - [x] create track last song every 5 sec if changed notify!
-
+- [ ] right now we are checking every 5 sec songs, we might need check if user inactive if user afk we should stop requesting.
 ---
 ### Finishing
 - [x] Bind fn's together so anyone can use
