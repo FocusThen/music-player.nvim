@@ -1,7 +1,8 @@
 local curl = require("plenary.curl")
 local utils = require("utils.utils")
 local utils_file = require("utils.file")
-local utils_timer = require("utils.timer")
+local utils_timer = require("utils.poll")
+local utils_afk = require("utils.afk")
 local server = require("utils.server")
 
 local title = "Music Player (Spotify)"
@@ -24,6 +25,12 @@ M.setup = function()
 	M.authorize()
 	if should_start_polling then
 		M.start_polling()
+		utils_afk.reset_afk_timer(M.stop_polling)
+		vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI", "InsertEnter", "InsertLeave", "BufEnter" }, {
+			callback = vim.schedule_wrap(function()
+				utils_afk.resume_afk(M.start_polling)
+			end),
+		})
 	end
 end
 
